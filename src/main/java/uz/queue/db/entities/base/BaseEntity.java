@@ -22,6 +22,9 @@ public abstract class BaseEntity {
     @Column(name="id", insertable = false, updatable = false, nullable = false)
     private UUID id;
 
+    @Column(name = "is_deleted")
+    private boolean deleted = false;
+
     @Column(name = "created_at", updatable = false)
     private Date createdAt;
 

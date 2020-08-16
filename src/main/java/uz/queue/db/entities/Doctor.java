@@ -11,17 +11,17 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "db_services")
+@Table(name = "db_doctors")
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
-public class Service extends BaseEntity {
+public class Doctor extends BaseEntity {
 
-    @Column(name = "service_name")
-    private String serviceName;
+    @Column(name = "specialization")
+    private String specialization;
 
-    @Column(name = "service_description")
-    private String serviceDescription;
+    @Column(name = "description")
+    private String description;
 
 }
