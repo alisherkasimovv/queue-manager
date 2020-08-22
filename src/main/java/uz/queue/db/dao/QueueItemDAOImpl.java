@@ -1,5 +1,6 @@
 package uz.queue.db.dao;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uz.queue.db.dao.interfaces.DoctorDAO;
 import uz.queue.db.dao.interfaces.QueueItemDAO;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
+@Slf4j
 public class QueueItemDAOImpl implements QueueItemDAO {
 
     private final QueueItemRepository repository;
@@ -45,8 +47,11 @@ public class QueueItemDAOImpl implements QueueItemDAO {
                 "\tSizning tartib raqamingiz:\n" +
                 "\t\t" + queueItem.getCounter() + "\n\n" +
                 "\tRo'yhatga qo'yilgan vaqt:\n" +
-                "\t\t" + queueItem.getCurrentOrderTimestamp() + "\n\n";
+                "\t\t" + this.dateTimeCreator(queueItem.getCurrentOrderTimestamp()) + "\n\n";
         printerService.printString("XP-80", sb);
+        // Cut paper
+        byte[] cutP = new byte[] { 0x1d, 'V', 1 };
+        printerService.printBytes("XP-80", cutP);
 
         return QueueItemDTOFactory.create(queueItem, doctorDTO);
     }
@@ -69,5 +74,21 @@ public class QueueItemDAOImpl implements QueueItemDAO {
         }
 
         repository.saveAll(items);
+    }
+
+    @Override
+    public void makeNewQueueItemForOne(UUID id) {
+        QueueItem item = new QueueItem();
+        item.setId(id);
+        item.setCounter(0);
+        item.setCreationDate(Calendar.getInstance());
+        item.setDayPassed(false);
+
+        repository.save(item);
+    }
+
+    private String dateTimeCreator(Calendar date) {
+        return date.get(Calendar.DATE) + "." + (date.get(Calendar.MONTH) + 1) + "." + date.get(Calendar.YEAR) +
+                "\t" + date.get(Calendar.HOUR) + ":" + date.get(Calendar.MINUTE) + ":" + date.get(Calendar.SECOND);
     }
 }

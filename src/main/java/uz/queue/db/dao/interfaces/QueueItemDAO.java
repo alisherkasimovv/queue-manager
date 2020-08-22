@@ -8,5 +8,6 @@ public interface QueueItemDAO {
 
     QueueItemDTO increaseCounterAndSave(UUID id);
     void makeNewQueueItemsForNewDay();
+    void makeNewQueueItemForOne(UUID id);
 
 }

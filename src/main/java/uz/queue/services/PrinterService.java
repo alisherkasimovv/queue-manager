@@ -47,7 +47,7 @@ public class PrinterService implements Printable {
         g2d.translate(pf.getImageableX(), pf.getImageableY());
         /* Now we perform our rendering */
 
-        g.setFont(new Font("Roman", 0, 8));
+        g.setFont(new Font("Roman", 0, 12));
         g.drawString("Hello world !", 0, 10);
 
         return PAGE_EXISTS;

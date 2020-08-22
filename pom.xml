@@ -12,6 +12,7 @@
 	<artifactId>queue-manager</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>queue-manager</name>
+	<packaging>war</packaging>
 	<description>Queue manager application</description>
 
 	<properties>
