@@ -9,6 +9,7 @@ import uz.queue.db.dto.QueueItemDTO;
 import uz.queue.db.entities.QueueItem;
 import uz.queue.db.factories.QueueItemDTOFactory;
 import uz.queue.db.repositories.QueueItemRepository;
+import uz.queue.services.PrinterService;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -20,10 +21,12 @@ public class QueueItemDAOImpl implements QueueItemDAO {
 
     private final QueueItemRepository repository;
     private final DoctorDAO doctorDAO;
+    private final PrinterService printerService;
 
-    public QueueItemDAOImpl(QueueItemRepository repository, DoctorDAO doctorDAO) {
+    public QueueItemDAOImpl(QueueItemRepository repository, DoctorDAO doctorDAO, PrinterService printerService) {
         this.repository = repository;
         this.doctorDAO = doctorDAO;
+        this.printerService = printerService;
     }
 
     @Override
@@ -36,6 +39,14 @@ public class QueueItemDAOImpl implements QueueItemDAO {
         queueItem.setCurrentOrderTimestamp(Calendar.getInstance());
 
         queueItem = repository.save(queueItem);
+
+        String sb = "\tSiz tanlagan shifokor:\n" +
+                "\t\t" + doctorDTO.getSpecialization() + "\n\n" +
+                "\tSizning tartib raqamingiz:\n" +
+                "\t\t" + queueItem.getCounter() + "\n\n" +
+                "\tRo'yhatga qo'yilgan vaqt:\n" +
+                "\t\t" + queueItem.getCurrentOrderTimestamp() + "\n\n";
+        printerService.printString("XP-80", sb);
 
         return QueueItemDTOFactory.create(queueItem, doctorDTO);
     }
