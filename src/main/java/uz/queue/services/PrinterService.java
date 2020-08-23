@@ -1,5 +1,6 @@
 package uz.queue.services;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.print.*;
@@ -16,6 +17,7 @@ import java.util.List;
  * Printer service. Helps to connect to POS printer and print data.
  */
 @Service
+@Slf4j
 public class PrinterService implements Printable {
 
     public List<String> getPrinters() {
@@ -73,17 +75,17 @@ public class PrinterService implements Printable {
                 flavor, pras);
         PrintService service = findPrintService(printerName, printService);
 
-        assert service != null;
-        DocPrintJob job = service.createPrintJob();
-
         try {
+            assert service != null;
+            DocPrintJob job = service.createPrintJob();
 
             Doc doc = new SimpleDoc(bytes, flavor, null);
 
             job.print(doc, null);
 
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
+            log.warn("Printer is not connected.");
         }
     }
 

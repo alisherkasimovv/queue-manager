@@ -79,4 +79,14 @@ public class DoctorController {
         return new ResponseEntity<>(dto, HttpStatus.OK);
     }
 
+    @GetMapping(value = "/delete/{id}")
+    public ResponseEntity<ResponseDTO> delete(@PathVariable UUID id) {
+        dao.delete(id);
+        dto = new ResponseDTO();
+        dto.setData(null);
+        dto.setMessage("Doktor bazadan o'chirildi.");
+        dto.setStatus(HttpStatus.ACCEPTED);
+        return new ResponseEntity<>(dto, HttpStatus.ACCEPTED);
+    }
+
 }

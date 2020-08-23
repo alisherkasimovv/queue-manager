@@ -36,9 +36,18 @@ public class QueueItemDAOImpl implements QueueItemDAO {
         DoctorDTO doctorDTO = doctorDAO.get(id);
         QueueItem queueItem = repository.findByDoctorAndDayPassedFalse(id);
 
-        queueItem.setCounter(queueItem.getCounter() + 1);
-        queueItem.setLastOrderTimestamp(queueItem.getCurrentOrderTimestamp());
-        queueItem.setCurrentOrderTimestamp(Calendar.getInstance());
+        try {
+            queueItem.setCounter(queueItem.getCounter() + 1);
+            queueItem.setLastOrderTimestamp(queueItem.getCurrentOrderTimestamp());
+            queueItem.setCurrentOrderTimestamp(Calendar.getInstance());
+        } catch (NullPointerException e) {
+            queueItem = new QueueItem();
+            queueItem.setDoctor(doctorDTO.getId());
+            queueItem.setCounter(1);
+            queueItem.setCreationDate(Calendar.getInstance());
+            queueItem.setDayPassed(false);
+            queueItem.setCurrentOrderTimestamp(Calendar.getInstance());
+        }
 
         queueItem = repository.save(queueItem);
 
