@@ -1,103 +1,76 @@
 package uz.queue.services;
 
+import com.github.anastaciocintra.escpos.EscPos;
+import com.github.anastaciocintra.escpos.EscPosConst;
+import com.github.anastaciocintra.escpos.image.*;
+import com.github.anastaciocintra.output.PrinterOutputStream;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import javax.print.*;
-import javax.print.attribute.HashPrintRequestAttributeSet;
-import javax.print.attribute.PrintRequestAttributeSet;
-import java.awt.*;
-import java.awt.print.PageFormat;
-import java.awt.print.Printable;
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.List;
+import javax.imageio.ImageIO;
+import javax.print.PrintService;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
-/**
- * Printer service. Helps to connect to POS printer and print data.
- */
 @Service
 @Slf4j
-public class PrinterService implements Printable {
+public class PrinterService {
 
-    public List<String> getPrinters() {
-        DocFlavor flavor = DocFlavor.BYTE_ARRAY.AUTOSENSE;
-        PrintRequestAttributeSet pras = new HashPrintRequestAttributeSet();
+    private EscPos pos;
 
-        PrintService[] printServices = PrintServiceLookup.lookupPrintServices(
-                flavor, pras);
-
-        List<String> printerList = new ArrayList<>();
-        for(PrintService printerService: printServices){
-            printerList.add( printerService.getName());
-        }
-
-        return printerList;
+    public PrinterService() {
     }
 
-    @Override
-    public int print(Graphics g, PageFormat pf, int page) {
-        if (page > 0) { /* We have only one page, and 'page' is zero-based */
-            return NO_SUCH_PAGE;
-        }
+    public void printData() {
 
-        /*
-         * User (0,0) is typically outside the imageable area, so we must
-         * translate by the X and Y values in the PageFormat to avoid clipping
-         */
-        Graphics2D g2d = (Graphics2D) g;
-        g2d.translate(pf.getImageableX(), pf.getImageableY());
-        /* Now we perform our rendering */
-
-        g.setFont(new Font("Roman", 0, 12));
-        g.drawString("Hello world !", 0, 10);
-
-        return PAGE_EXISTS;
-    }
-
-    public void printString(String printerName, String text) {
         try {
-            byte[] bytes;
-            bytes = text.getBytes("CP437");
+            PrintService printService = PrinterOutputStream.getPrintServiceByName("XP-80");
+            PrinterOutputStream printerOutputStream = new PrinterOutputStream(printService);
+            pos = new EscPos(printerOutputStream);
+            pos.setCharacterCodeTable(EscPos.CharacterCodeTable.CP437_USA_Standard_Europe);
 
-            this.printBytes(printerName, bytes);
-        } catch (UnsupportedEncodingException e) {
+            printImage();
+
+            pos.feed(1);
+            pos.cut(EscPos.CutMode.FULL);
+
+            pos.close();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void printBytes(String printerName, byte[] bytes) {
-
-        DocFlavor flavor = DocFlavor.BYTE_ARRAY.AUTOSENSE;
-        PrintRequestAttributeSet pras = new HashPrintRequestAttributeSet();
-
-        PrintService[] printService = PrintServiceLookup.lookupPrintServices(
-                flavor, pras);
-        PrintService service = findPrintService(printerName, printService);
-
+    private void printImage() {
         try {
-            assert service != null;
-            DocPrintJob job = service.createPrintJob();
+            Bitonal algorithm = new BitonalThreshold(127);
+            // creating the EscPosImage, need buffered image and algorithm.
 
-            Doc doc = new SimpleDoc(bytes, flavor, null);
+            BufferedImage githubBufferedImage = getImage("./data/output.png");
+            EscPosImage escposImage = new EscPosImage(new CoffeeImageImpl(githubBufferedImage), algorithm);
 
-            job.print(doc, null);
+            BitImageWrapper imageWrapper = new BitImageWrapper();
 
-        } catch (Exception e) {
-//            e.printStackTrace();
-            log.warn("Printer is not connected.");
+            imageWrapper.setJustification(EscPosConst.Justification.Center);
+
+            pos.write(imageWrapper, escposImage);
+            pos.feed(4);
+            pos.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+
     }
 
-    private PrintService findPrintService(String printerName,
-                                          PrintService[] services) {
-        for (PrintService service : services) {
-            if (service.getName().equalsIgnoreCase(printerName)) {
-                return service;
-            }
+    private BufferedImage getImage(String image) {
+        BufferedImage bufferedImage = null;
+        try {
+            bufferedImage = ImageIO.read(new File(image));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
-        return null;
+        return bufferedImage;
     }
 
 }

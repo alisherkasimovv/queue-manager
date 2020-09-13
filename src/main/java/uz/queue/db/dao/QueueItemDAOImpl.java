@@ -10,6 +10,7 @@ import uz.queue.db.dto.QueueItemDTO;
 import uz.queue.db.entities.QueueItem;
 import uz.queue.db.factories.QueueItemDTOFactory;
 import uz.queue.db.repositories.QueueItemRepository;
+import uz.queue.services.Drawer;
 import uz.queue.services.PrinterService;
 
 import java.util.ArrayList;
@@ -23,11 +24,13 @@ public class QueueItemDAOImpl implements QueueItemDAO {
 
     private final QueueItemRepository repository;
     private final DoctorDAO doctorDAO;
+    private final Drawer drawer;
     private final PrinterService printerService;
 
-    public QueueItemDAOImpl(QueueItemRepository repository, DoctorDAO doctorDAO, PrinterService printerService) {
+    public QueueItemDAOImpl(QueueItemRepository repository, DoctorDAO doctorDAO, Drawer drawer, PrinterService printerService) {
         this.repository = repository;
         this.doctorDAO = doctorDAO;
+        this.drawer = drawer;
         this.printerService = printerService;
     }
 
@@ -51,16 +54,18 @@ public class QueueItemDAOImpl implements QueueItemDAO {
 
         queueItem = repository.save(queueItem);
 
-        String sb = "\tSiz tanlagan shifokor:\n" +
-                "\t\t" + doctorDTO.getSpecialization() + "\n\n" +
-                "\tSizning tartib raqamingiz:\n" +
-                "\t\t" + queueItem.getCounter() + "\n\n" +
-                "\tRo'yhatga qo'yilgan vaqt:\n" +
-                "\t\t" + this.dateTimeCreator(queueItem.getCurrentOrderTimestamp()) + "\n\n";
-        printerService.printString("XP-80", sb);
-        // Cut paper
-        byte[] cutP = new byte[] { 0x1d, 'V', 1 };
-        printerService.printBytes("XP-80", cutP);
+
+
+        String[] text = {
+                "Ваш номер очереди",
+                this.createString(queueItem.getCounter()),
+                doctorDTO.getSpecialization(),
+                "Дата: " + dateTimeCreator(queueItem.getCurrentOrderTimestamp()),
+                "Благодарим за то, что выбрали",
+                "Global Medical Center"
+        };
+        drawer.createImageWithText(text);
+        printerService.printData();
 
         return QueueItemDTOFactory.create(queueItem, doctorDTO);
     }
@@ -98,6 +103,21 @@ public class QueueItemDAOImpl implements QueueItemDAO {
 
     private String dateTimeCreator(Calendar date) {
         return date.get(Calendar.DATE) + "." + (date.get(Calendar.MONTH) + 1) + "." + date.get(Calendar.YEAR) +
-                "\t" + date.get(Calendar.HOUR) + ":" + date.get(Calendar.MINUTE) + ":" + date.get(Calendar.SECOND);
+                " " + date.get(Calendar.HOUR) + ":" + date.get(Calendar.MINUTE) + ":" + date.get(Calendar.SECOND);
+    }
+
+    private String createString(int reference) {
+        String ref = "";
+        if (reference < 10) {
+            ref =  "00" + reference;
+        } else if (reference < 100) {
+            ref = "0" + reference;
+        } else if (reference < 1000) {
+            ref = "" + reference;
+        } else if (reference == 1000) {
+            ref = "" + 1000;
+        }
+
+        return ref;
     }
 }

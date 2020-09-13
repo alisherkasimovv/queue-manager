@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>$title</title>
+
+    <style>
+        @font-face {
+            font-family: fira-regular;
+            src: url(./fonts/FiraSans-Regular.otf);
+        }
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        .card-holder {
+            width: 10cm;
+            display: block;
+            border: 1px solid black;
+            text-align: center;
+            font-family: fira-regular, serif;
+        }
+        .logo {
+            display: block;
+            width: 50%;
+        }
+        .header,
+        .queue,
+        .service,
+        .footer {
+            display: block;
+            width: 100%;
+            font-size: .6cm;
+        }
+        .service,
+        .queue {
+            font-weight: bold;
+        }
+        .logo {
+            padding-top: 1cm;
+        }
+        .header,
+        .footer {
+            padding-top: 1.5cm;
+        }
+        .queue {
+            font-size: 3cm;
+        }
+        .service {
+            font-size: .8cm;
+        }
+        .footer {
+            padding-bottom: 1cm;
+        }
+    </style>
+</head>
+<body>
+    <div class="card-holder">
+        <div class="logo">
+            <img src="logo.jpg" alt="Logo" width="70%">
+        </div>
+        <div class="header">Ваш номер очереди</div>
+        <div class="queue">999</div>
+        <div class="service">TEST</div>
+        <div class="footer">Благодарим за то, что выбрали<br>Global Medical Center!</div>
+    </div>
+</body>
+</html>

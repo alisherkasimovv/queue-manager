@@ -10,30 +10,29 @@ import uz.queue.db.dao.interfaces.QueueItemDAO;
 public class ApplicationStartupRunner implements CommandLineRunner {
     private final QueueItemDAO queueItemDAO;
     private final PrinterService printerService;
+    private final Drawer drawer;
 
-    public ApplicationStartupRunner(QueueItemDAO queueItemDAO, PrinterService printerService) {
+    public ApplicationStartupRunner(QueueItemDAO queueItemDAO, PrinterService printerService, Drawer drawer) {
         this.queueItemDAO = queueItemDAO;
         this.printerService = printerService;
+        this.drawer = drawer;
     }
 
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
         log.warn("All previous order lists were reset. Now, counter starts at 0 again.");
         queueItemDAO.makeNewQueueItemsForNewDay();
-        checkPrinterConnection();
-        printTestData();
-    }
 
-    private void checkPrinterConnection() {
-        log.info(String.valueOf(printerService.getPrinters()));
-    }
-
-    private void printTestData() {
-        // Print text showing that printer is connected
-        printerService.printString("XP-80", "\n\n Printer programma bilan bog'landi. \n\n");
-
-        // Cut paper
-        byte[] cutP = new byte[] { 0x1d, 'V', 1 };
-        printerService.printBytes("XP-80", cutP);
+        String[] text = {
+                "Ваш номер очереди",
+                "0000",
+                "TEST",
+                "Дата: 00.00.0000 00:00:00",
+                "Благодарим за то, что выбрали",
+                "Global Medical Center"
+        };
+        drawer.createImageWithText(text);
+        log.info("Printing test data.");
+        printerService.printData();
     }
 }
